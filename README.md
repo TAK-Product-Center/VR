@@ -6,4 +6,4 @@
    - Copy the contents of [sdkRoot]/EnginePatch into [sdkRoot]/Engine and replace all files
 3. Run [sdkRoot]/GenerateProjectFiles.bat
 4. Open [sdkRoot]/UE5.sln in Visual Studio 2022
-5. Build Engine\UE5 and Games\Game
+5. Build Engine/UE5 and Games/Game projects
