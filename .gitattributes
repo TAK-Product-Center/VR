@@ -3,3 +3,4 @@ Prereqs/directx_Jun2010_redist.exe filter=lfs diff=lfs merge=lfs -text
 EnginePatch/Plugins/Runtime/OpenCV/Binaries/ThirdParty/Win64/opencv_world455d.dll filter=lfs diff=lfs merge=lfs -text
 Game/Plugins/VH_FileIO/Source/ThirdParty/libkml/lib/x64/Release/libkmldom.lib filter=lfs diff=lfs merge=lfs -text
 Game/Plugins/VH_ArtUtilities/Content/UltraDynamicSky/Textures/Sky/Real_Stars.uasset filter=lfs diff=lfs merge=lfs -text
+Game/Content/VTAK/Maps/Tutorial/TutorialGaragesLevel_P_BuiltData.uasset filter=lfs diff=lfs merge=lfs -text
