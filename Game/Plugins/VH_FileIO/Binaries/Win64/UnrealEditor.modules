@@ -1,0 +1,9 @@
+{
+	"BuildId": "a84e41d2-d815-4af6-9a6d-4f43bc3dec09",
+	"Modules": 
+	{
+		"VH_FileIO": "UnrealEditor-VH_FileIO.dll",
+		"VH_FileIO_Kml": "UnrealEditor-VH_FileIO_Kml.dll",
+		"VH_FileIO_Network": "UnrealEditor-VH_FileIO_Network.dll"
+	}
+}
