@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<geocodingSource>
+	<id>MapQuest</id>
+	<displayName>MapQuest</displayName>
+	<forwardUrl>http://www.mapquestapi.com/geocoding/v1/address?key={$appkey}&inFormat=kvp&outFormat=json&location={$address}</forwardUrl>
+	<reverseUrl>http://www.mapquestapi.com/geocoding/v1/reverse?key={$appkey}&location={$latitude},{$longitude}&includeRoadMetadata=true&includeNearestIntersection=true</reverseUrl>
+	<appKey></appKey>
+</geocodingSource>

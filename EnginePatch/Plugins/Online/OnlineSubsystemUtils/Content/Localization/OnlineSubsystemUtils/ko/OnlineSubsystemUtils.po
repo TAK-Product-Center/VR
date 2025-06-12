@@ -1,0 +1,155 @@
+﻿# OnlineSubsystemUtils Korean translation.
+# Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: OnlineSubsystemUtils\n"
+"POT-Creation-Date: 2018-03-13 06:42\n"
+"PO-Revision-Date: 2018-03-13 06:42\n"
+"Language-Team: \n"
+"Language: ko\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. Key:	Accepted
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:148
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:148
+msgctxt "EPartyReservationResult,Accepted"
+msgid "Accepted"
+msgstr "수락됨"
+
+#. Key:	BannedResponse
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:142
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:142
+msgctxt "EPartyReservationResult,BannedResponse"
+msgid "Player Banned"
+msgstr "플레이어 추방됨"
+
+#. Key:	ContainsExistingPlayers
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:154
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:154
+msgctxt "EPartyReservationResult,ContainsExistingPlayers"
+msgid "Party members already in session"
+msgstr "파티원들이 이미 게임 중입니다."
+
+#. Key:	DeniedResponse
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:140
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:140
+msgctxt "EPartyReservationResult,DeniedResponse"
+msgid "Not accepting connections"
+msgstr "연결 불가 상태"
+
+#. Key:	DuplicateReservation
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:150
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:150
+msgctxt "EPartyReservationResult,DuplicateReservation"
+msgid "Duplicate reservation detected"
+msgstr "중복 예약 감지됨"
+
+#. Key:	FullGame
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:136
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:136
+msgctxt "EPartyReservationResult,FullGame"
+msgid "Game full"
+msgstr "게임 풀"
+
+#. Key:	GeneralError
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:144
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:144
+msgctxt "EPartyReservationResult,GeneralError"
+msgid "Unknown Error"
+msgstr "알 수 없는 오류"
+
+#. Key:	InvalidReservation
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:152
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:152
+msgctxt "EPartyReservationResult,InvalidReservation"
+msgid "Bad reservation request"
+msgstr "잘못된 예약 요청입니다."
+
+#. Key:	NoResponse
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:138
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:138
+msgctxt "EPartyReservationResult,NoResponse"
+msgid "No response"
+msgstr "반응 없음"
+
+#. Key:	ReservationNotFound
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:146
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:146
+msgctxt "EPartyReservationResult,ReservationNotFound"
+msgid "No Reservation"
+msgstr "예약 없음"
+
+#. Key:	FlushLeaderboards
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineBlueprintSupport/Private/K2Node_LeaderboardFlush.cpp:24
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineBlueprintSupport/Private/K2Node_LeaderboardFlush.cpp:24
+msgctxt "K2Node,FlushLeaderboards"
+msgid "Flush Leaderboards"
+msgstr "순위표 비움"
+
+#. Key:	K2Node_LeaderboardFlush_Tooltip
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineBlueprintSupport/Private/K2Node_LeaderboardFlush.cpp:19
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineBlueprintSupport/Private/K2Node_LeaderboardFlush.cpp:19
+msgctxt "K2Node,K2Node_LeaderboardFlush_Tooltip"
+msgid "Flushes leaderboards for a session"
+msgstr "한 기간 동안의 순위표를 비웁니다."
+
+#. Key:	LeaderboardFlushCategory
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineBlueprintSupport/Private/K2Node_LeaderboardFlush.cpp:29
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineBlueprintSupport/Private/K2Node_LeaderboardFlush.cpp:29
+msgctxt "K2Node,LeaderboardFlushCategory"
+msgid "Online|Leaderboard"
+msgstr "온라인|순위표"
+
+#. Key:	BeaconSpawnClientWorldPackageNameError
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:196
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:196
+msgctxt "NetworkErrors,BeaconSpawnClientWorldPackageNameError"
+msgid "Join failure, existing ClientWorldPackageName."
+msgstr "참가 실패, ClientWorldPackageName 이 이미 있습니다."
+
+#. Key:	BeaconSpawnExistingActorError
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:191
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:191
+msgctxt "NetworkErrors,BeaconSpawnExistingActorError"
+msgid "Join failure, existing beacon actor."
+msgstr "참가 실패, 봉화 액터가 이미 있습니다."
+
+#. Key:	BeaconSpawnFailureError
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:186
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:186
+msgctxt "NetworkErrors,BeaconSpawnFailureError"
+msgid "Join failure, Couldn't spawn beacon."
+msgstr "참가 실패, 봉화를 스폰시킬 수 없습니다."
+
+#. Key:	BeaconSpawnNetGUIDAckError1
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:234
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:234
+msgctxt "NetworkErrors,BeaconSpawnNetGUIDAckError1"
+msgid "Join failure, no host object at NetGUIDAck."
+msgstr "참가 실패, NetGUIDAck 에 호스트 오브젝트가 없습니다."
+
+#. Key:	BeaconSpawnNetGUIDAckError2
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:240
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:240
+msgctxt "NetworkErrors,BeaconSpawnNetGUIDAckError2"
+msgid "Join failure, no actor at NetGUIDAck."
+msgstr "참가 실패, NetGUIDAck 에 액터가 없습니다."
+
+#. Key:	BeaconSpawnUnexpectedError
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:257
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:257
+msgctxt "NetworkErrors,BeaconSpawnUnexpectedError"
+msgid "Join failure, unexpected control message."
+msgstr "참가 실패, 예상치 못한 제어 메시지입니다."
+
+#. Key:	GenericBeaconConnectionFailed
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconClient.cpp:375
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconClient.cpp:375
+msgctxt "NetworkErrors,GenericBeaconConnectionFailed"
+msgid "Beacon Connection Failed."
+msgstr "봉화 연결 실패."
+
