@@ -1,0 +1,39 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "VH_Globe",
+	"Description": "Utilities and functionality to support geographical/geodetic mathematics, rendering, etc.",
+	"Category": "Virtual Heroes",
+	"CreatedBy": "Applied Research Associates / Virtual Heroes Division",
+	"CreatedByURL": "www.virtualheroes.com",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"EnabledByDefault": true,
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "VH_Globe",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "VH_GlobeMath",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "VH_Database",
+			"Enabled": true
+		},
+		{
+			"Name": "VH_Developer",
+			"Enabled": true
+		}
+	]
+}

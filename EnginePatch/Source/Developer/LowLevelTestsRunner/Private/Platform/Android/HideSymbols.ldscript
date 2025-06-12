@@ -1,0 +1,8 @@
+EOSSDKUnitTests {
+    global: LowLevelTestsMain;
+    global: JNI_OnLoad;
+    *VM*;
+    *AndroidPath*;
+    *Catch*;
+    local: *;
+};

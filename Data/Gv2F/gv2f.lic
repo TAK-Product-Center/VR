@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmllicense version="1">
+  <stringdata version="3">
+    <entry key="Address" value="1700 Air Force Pentagon"/>
+    <entry key="City" value="Washington"/>
+    <entry key="Department" value="AFA2II ISR"/>
+    <entry key="E-Mail" value="james.mattey@pentagon.af.mil"/>
+    <entry key="Expiration" value="Never"/>
+    <entry key="Fax Number" value="703-693-1751"/>
+    <entry key="First Name" value="Jim"/>
+    <entry key="Last Name" value="Mattey"/>
+    <entry key="Organization" value="USAF"/>
+    <entry key="Phone Number" value="703-693-1751"/>
+    <entry key="Postal Code" value="20330"/>
+    <entry key="State" value="DC"/>
+  </stringdata>
+  <productname value="GV2F"/>
+  <binarydata><![CDATA[265367c8302d021436f3954acf62ada7f2b69022a234eba0c52fcc8402150086eda45cf11bdb74b60cac23fcf0eaa93fe8468d66005db0ac4ac4120004475632460003312e300000000026f99433a68bd5f5f01cc6a0873bf68efa054ec5cfeed838]]></binarydata>
+</xmllicense>

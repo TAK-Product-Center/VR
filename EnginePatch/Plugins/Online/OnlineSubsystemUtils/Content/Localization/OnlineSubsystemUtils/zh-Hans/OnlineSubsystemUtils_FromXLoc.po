@@ -1,0 +1,155 @@
+﻿# OnlineSubsystemUtils English translation.
+# Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: OnlineSubsystemUtils\n"
+"POT-Creation-Date: 2018-01-09 11:32\n"
+"PO-Revision-Date: 2018-01-09 11:32\n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Key:	Accepted
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:140
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:140
+msgctxt "EPartyReservationResult,Accepted"
+msgid "Accepted"
+msgstr "已接受"
+
+#. Key:	BannedResponse
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:134
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:134
+msgctxt "EPartyReservationResult,BannedResponse"
+msgid "Player Banned"
+msgstr "玩家被禁"
+
+#. Key:	ContainsExistingPlayers
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:146
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:146
+msgctxt "EPartyReservationResult,ContainsExistingPlayers"
+msgid "Party members already in session"
+msgstr "队伍成员已在会话中"
+
+#. Key:	DeniedResponse
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:132
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:132
+msgctxt "EPartyReservationResult,DeniedResponse"
+msgid "Not accepting connections"
+msgstr "未接受连接"
+
+#. Key:	DuplicateReservation
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:142
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:142
+msgctxt "EPartyReservationResult,DuplicateReservation"
+msgid "Duplicate reservation detected"
+msgstr "检测到重复预留"
+
+#. Key:	FullGame
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:128
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:128
+msgctxt "EPartyReservationResult,FullGame"
+msgid "Game full"
+msgstr "游戏已满"
+
+#. Key:	GeneralError
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:136
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:136
+msgctxt "EPartyReservationResult,GeneralError"
+msgid "Unknown Error"
+msgstr "未知错误"
+
+#. Key:	InvalidReservation
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:144
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:144
+msgctxt "EPartyReservationResult,InvalidReservation"
+msgid "Bad reservation request"
+msgstr "无效的预留请求"
+
+#. Key:	NoResponse
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:130
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:130
+msgctxt "EPartyReservationResult,NoResponse"
+msgid "No response"
+msgstr "无响应"
+
+#. Key:	ReservationNotFound
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:138
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Public/PartyBeaconState.h:138
+msgctxt "EPartyReservationResult,ReservationNotFound"
+msgid "No Reservation"
+msgstr "无预留"
+
+#. Key:	FlushLeaderboards
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineBlueprintSupport/Private/K2Node_LeaderboardFlush.cpp:24
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineBlueprintSupport/Private/K2Node_LeaderboardFlush.cpp:24
+msgctxt "K2Node,FlushLeaderboards"
+msgid "Flush Leaderboards"
+msgstr "刷新排行榜"
+
+#. Key:	K2Node_LeaderboardFlush_Tooltip
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineBlueprintSupport/Private/K2Node_LeaderboardFlush.cpp:19
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineBlueprintSupport/Private/K2Node_LeaderboardFlush.cpp:19
+msgctxt "K2Node,K2Node_LeaderboardFlush_Tooltip"
+msgid "Flushes leaderboards for a session"
+msgstr "刷新一个会话的排行榜"
+
+#. Key:	LeaderboardFlushCategory
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineBlueprintSupport/Private/K2Node_LeaderboardFlush.cpp:29
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineBlueprintSupport/Private/K2Node_LeaderboardFlush.cpp:29
+msgctxt "K2Node,LeaderboardFlushCategory"
+msgid "Online|Leaderboard"
+msgstr "在线|排行榜"
+
+#. Key:	BeaconSpawnClientWorldPackageNameError
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:196
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:196
+msgctxt "NetworkErrors,BeaconSpawnClientWorldPackageNameError"
+msgid "Join failure, existing ClientWorldPackageName."
+msgstr "加入失败，存在ClientWorldPackageName。"
+
+#. Key:	BeaconSpawnExistingActorError
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:191
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:191
+msgctxt "NetworkErrors,BeaconSpawnExistingActorError"
+msgid "Join failure, existing beacon actor."
+msgstr "加入失败，存在beacon actor。"
+
+#. Key:	BeaconSpawnFailureError
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:186
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:186
+msgctxt "NetworkErrors,BeaconSpawnFailureError"
+msgid "Join failure, Couldn't spawn beacon."
+msgstr "加入失败，无法产生beacon。"
+
+#. Key:	BeaconSpawnNetGUIDAckError1
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:234
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:234
+msgctxt "NetworkErrors,BeaconSpawnNetGUIDAckError1"
+msgid "Join failure, no host object at NetGUIDAck."
+msgstr "加入失败，NetGUIDAck无宿主对象。"
+
+#. Key:	BeaconSpawnNetGUIDAckError2
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:240
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:240
+msgctxt "NetworkErrors,BeaconSpawnNetGUIDAckError2"
+msgid "Join failure, no actor at NetGUIDAck."
+msgstr "加入失败，NetGUIDAck无actor。"
+
+#. Key:	BeaconSpawnUnexpectedError
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:257
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconHost.cpp:257
+msgctxt "NetworkErrors,BeaconSpawnUnexpectedError"
+msgid "Join failure, unexpected control message."
+msgstr "加入失败，意外控制消息。"
+
+#. Key:	GenericBeaconConnectionFailed
+#. SourceLocation:	Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconClient.cpp:375
+#: Plugins/Online/OnlineSubsystemUtils/Source/OnlineSubsystemUtils/Private/OnlineBeaconClient.cpp:375
+msgctxt "NetworkErrors,GenericBeaconConnectionFailed"
+msgid "Beacon Connection Failed."
+msgstr "Beacon连接失败。"
+

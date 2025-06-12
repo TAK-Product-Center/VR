@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<geocodingSource>
+	<id>Mapbox</id>
+	<displayName>Mapbox</displayName>
+	<forwardUrl>https://api.mapbox.com/geocoding/v5/mapbox.places/{$address}.json?access_token={$appkey}</forwardUrl>
+	<reverseUrl>https://api.mapbox.com/geocoding/v5/mapbox.places/{$longitude},{$latitude}.json?access_token={$appkey}</reverseUrl>
+	<appKey></appKey>
+</geocodingSource>

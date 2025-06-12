@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+
+	"FriendlyName": "VH_Replication",
+	"Version": 1,
+	"VersionName": "1.0",
+	"CreatedBy": "Applied Research Associates / Virtual Heroes Division",
+	"CreatedByURL": "www.virtualheroes.com",
+	"Description": "VH Replication",
+	"Category": "VH",
+	"EnabledByDefault": true,
+	"Installed": true,
+	"CanContainContent": true,
+	"IsHidden": true,
+
+	"Modules": [
+		{
+			"Name": "VH_Replication",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"Enabled": true
+		}
+	]
+}
