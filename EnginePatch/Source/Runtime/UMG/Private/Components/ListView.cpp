@@ -220,6 +220,13 @@ void UListView::BP_ClearSelection()
 	ClearSelection();
 }
 
+// WITH_VH
+void UListView::BP_SetItemsSelection(const TArray<UObject*> items, bool bSelected)
+{
+	SetItemsSelection(items, bSelected);
+}
+// end WITH_VH
+
 void UListView::OnItemsChanged(const TArray<UObject*>& AddedItems, const TArray<UObject*>& RemovedItems)
 {
 	// Allow subclasses to do special things when objects are added or removed from the list.

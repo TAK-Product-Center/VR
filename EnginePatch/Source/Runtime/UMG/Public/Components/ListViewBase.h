@@ -178,6 +178,16 @@ public:
 		}
 	}
 
+	// WITH_VH
+	void SetItemsSelection(const TArray<ItemType> Items, bool bIsSelected, ESelectInfo::Type SelectInfo = ESelectInfo::Direct)
+	{
+		if (SListView<ItemType>* MyListView = GetMyListView())
+		{
+			MyListView->SetItemSelection(Items, bIsSelected, SelectInfo);
+		}
+	}
+	// end WITH_VH
+
 	void ClearSelection()
 	{
 		if (SListView<ItemType>* MyListView = GetMyListView())

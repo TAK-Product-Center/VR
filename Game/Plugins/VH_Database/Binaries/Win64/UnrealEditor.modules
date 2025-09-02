@@ -1,8 +1,0 @@
-{
-	"BuildId": "a84e41d2-d815-4af6-9a6d-4f43bc3dec09",
-	"Modules": 
-	{
-		"VH_Database_MySQL": "UnrealEditor-VH_Database_MySQL.dll",
-		"VH_Database_Spatialite": "UnrealEditor-VH_Database_Spatialite.dll"
-	}
-}

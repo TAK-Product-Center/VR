@@ -133,7 +133,7 @@ bool FXmlFile::SaveToString(FString& xmlString)
 	const FXmlNode* CurrentNode = GetRootNode();
 	if(CurrentNode != nullptr)
 	{
-		WriteNodeHierarchy(*CurrentNode, FString(), xmlString);
+		WriteNodeHierarchy(*CurrentNode, TEXT(""), TEXT(""), xmlString);
 
 		return true;
 	}
@@ -852,5 +852,45 @@ void FXmlFile::WriteNodeHierarchy(const FXmlNode& Node, const FString& Indent, F
 			WriteNodeHierarchy(*ChildNode, Indent + TEXT("\t"), Output);
 		}
 		Output += Indent + FString::Printf(TEXT("</%s>"), *Node.GetTag()) + LINE_TERMINATOR;
+	}
+}
+
+void FXmlFile::WriteNodeHierarchy(const FXmlNode& node, const FString& indent, const FString& lineTerminator, FString& output)
+{
+	// Write the tag
+	output += indent + FString::Printf(TEXT("<%s"), *node.GetTag());
+	for(const FXmlAttribute& Attribute: node.GetAttributes())
+	{
+		FString EscapedValue = Attribute.GetValue();
+		EscapedValue.ReplaceInline(TEXT("&"), TEXT("&amp;"), ESearchCase::CaseSensitive);
+		EscapedValue.ReplaceInline(TEXT("\""), TEXT("&quot;"), ESearchCase::CaseSensitive);
+		EscapedValue.ReplaceInline(TEXT("'"), TEXT("&apos;"), ESearchCase::CaseSensitive);
+		EscapedValue.ReplaceInline(TEXT("<"), TEXT("&lt;"), ESearchCase::CaseSensitive);
+		EscapedValue.ReplaceInline(TEXT(">"), TEXT("&gt;"), ESearchCase::CaseSensitive);
+		output += FString::Printf(TEXT(" %s=\"%s\""), *Attribute.GetTag(), *EscapedValue);
+	}
+
+	// Write the node contents
+	const FXmlNode* FirstChildNode = node.GetFirstChildNode();
+	if(FirstChildNode == nullptr)
+	{
+		const FString& Content = node.GetContent();
+		if(Content.Len() == 0)
+		{
+			output += TEXT(" />") + lineTerminator;
+		}
+		else
+		{
+			output += TEXT(">") + Content + FString::Printf(TEXT("</%s>"), *node.GetTag()) + lineTerminator;
+		}
+	}
+	else
+	{
+		output += TEXT(">") + lineTerminator;
+		for(const FXmlNode* ChildNode = FirstChildNode; ChildNode != nullptr; ChildNode = ChildNode->GetNextNode())
+		{
+			WriteNodeHierarchy(*ChildNode, indent + indent, lineTerminator, output);
+		}
+		output += indent + FString::Printf(TEXT("</%s>"), *node.GetTag()) + lineTerminator;
 	}
 }

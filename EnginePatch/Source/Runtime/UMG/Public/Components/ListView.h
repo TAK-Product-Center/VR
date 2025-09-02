@@ -250,6 +250,11 @@ private:
 	UFUNCTION(BlueprintCallable, Category = ListView, meta = (AllowPrivateAccess = true, DisplayName = "Clear Selection"))
 	UMG_API void BP_ClearSelection();
 
+	// WITH_VH
+	UFUNCTION(BlueprintCallable, Category = ListView, meta = (AllowPrivateAccess = true, DisplayName = "Set Items Selection"))
+	UMG_API void BP_SetItemsSelection(const TArray<UObject*> items, bool bSelected);
+	// end WITH_VH
+
 	/** Gets the number of items currently selected in the list */
 	UFUNCTION(BlueprintCallable, Category = ListView, meta = (AllowPrivateAccess = true, DisplayName = "Get Num Items Selected"))
 	UMG_API int32 BP_GetNumItemsSelected() const;

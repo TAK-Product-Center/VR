@@ -509,7 +509,8 @@ protected:
 		}
 		else
 		{
-			checkf(OwnerTable->Private_IsPendingRefresh(), TEXT("We were unable to find the item for this widget. If it was removed from the source collection, the list should be pending a refresh. %s"), *FReflectionMetaData::GetWidgetPath(this, false, false));
+			// WITH_VH | commented because this occurs when expected (e.g. click on list item causes list to clear and mouse off to occur.  Mouse off event checks if item is selected)
+			//checkf(OwnerTable->Private_IsPendingRefresh(), TEXT("We were unable to find the item for this widget. If it was removed from the source collection, the list should be pending a refresh. %s"), *FReflectionMetaData::GetWidgetPath(this, false, false));
 		}
 
 		return nullptr;

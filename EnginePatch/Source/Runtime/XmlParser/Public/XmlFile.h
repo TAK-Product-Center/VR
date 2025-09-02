@@ -105,6 +105,8 @@ public:  // WITH_VH
 	/** Writes a node hierarchy at the given root to a string */
 	static XMLPARSER_API void WriteNodeHierarchy(const FXmlNode& Node, const FString& Indent, FString& Output);
 
+	static XMLPARSER_API void WriteNodeHierarchy(const FXmlNode& node, const FString& indent, const FString& lineTerminator, FString& output);  // WITH_VH
+
 private:
 
 	/** The passed-in path of the loaded file (might be absolute or relative) */
