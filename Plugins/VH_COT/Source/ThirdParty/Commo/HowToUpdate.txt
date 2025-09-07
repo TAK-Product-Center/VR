@@ -1,5 +1,0 @@
-1) download cygwin
-2) download commoncommo and takthirdparty from TAK Product Center git
-3) put commoncommo and takthirdparty in cygwin home folder
-4) run cygwin
-5) from takthirdparty root directory; run command: make TARGET=win64 BUILD_TYPE=release build_commoncommo
