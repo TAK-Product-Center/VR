@@ -1,0 +1,30 @@
+{
+	"FileVersion": 3,
+
+	"FriendlyName": "VH_Keyboard",
+	"Version": 1,
+	"VersionName": "1.0",
+	"CreatedBy": "Applied Research Associates / Virtual Heroes Division",
+	"CreatedByURL": "www.virtualheroes.com",
+	"Description": "VH Keyboard",
+	"Category": "VH",
+	"EnabledByDefault": true,
+	"Installed": true,
+	"CanContainContent": true,
+	"IsHidden": true,
+
+	"Modules": [
+		{
+			"Name": "VH_Keyboard",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"Enabled": true
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "VH_Developer",
+			"Enabled": true
+		}
+	]
+}
