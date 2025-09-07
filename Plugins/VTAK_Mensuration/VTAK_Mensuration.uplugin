@@ -1,0 +1,44 @@
+{
+	"FileVersion": 3,
+	"Version": 4,
+	"VersionName": "5.5.0",
+	"FriendlyName": "VTAK Mensuration",
+	"Description": "This is a measurement tool used for accurately measuring things in a particular plane.",
+	"Category": "ARA",
+	"CreatedBy": "Virtual Heroes, a division of ARA",
+	"CreatedByURL": "http://www.virtualheroes.com",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"EnabledByDefault": true,
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "VTAK_Mensuration",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "VH_COT",
+			"Enabled": true
+		},
+		{
+			"Name": "VH_Plugins",
+			"Enabled": true
+		},
+		{
+			"Name": "VH_UI",
+			"Enabled": true
+		},
+		{
+			"Name": "VH_VR",
+			"Enabled": true
+		}
+	],
+	"IsExperimentalVersion": false,
+	"SlatedForDeletion": false
+}

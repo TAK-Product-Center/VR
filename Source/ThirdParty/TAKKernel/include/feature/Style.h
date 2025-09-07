@@ -1,0 +1,897 @@
+#ifndef ATAKMAP_FEATURE_STYLE_H_INCLUDED
+#define ATAKMAP_FEATURE_STYLE_H_INCLUDED
+
+#include <functional>
+#include <memory>
+#include <stdexcept>
+#include <vector>
+
+#include "port/Platform.h"
+#include "port/String.h"
+#include "util/Error.h"
+
+namespace atakmap                       // Open atakmap namespace.
+{
+    namespace feature                       // Open feature namespace.
+    {
+
+        class ENGINE_API Style;
+
+        enum StyleClass
+        {
+            TESC_BasicPointStyle,
+            TESC_LabelPointStyle,
+            TESC_IconPointStyle,
+            TESC_BasicStrokeStyle,
+            TESC_BasicFillStyle,
+            TESC_CompositeStyle,
+            TESC_PatternStrokeStyle,
+            TESC_ArrowStrokeStyle,
+            TESC_LevelOfDetailStyle,
+            TESC_MeshPointStyle,
+        };
+
+        enum StrokeExtrusionMode
+        {
+            TEEM_None,
+            TEEM_EndPoint,
+            TEEM_Vertex,
+        };
+
+        enum ArrowHeadMode
+        {
+            TEAH_OnlyLast,
+            TEAH_PerVertex,
+        };
+
+        typedef std::unique_ptr<Style, void(*)(const Style *)> StylePtr;
+        typedef std::unique_ptr<const Style, void(*)(const Style *)> StylePtr_Const;
+
+        class ENGINE_API Style
+        {
+        private :
+            Style(const StyleClass clazz) NOTHROWS;
+        public:
+            virtual ~Style () NOTHROWS = 0;
+        public :
+            static void destructStyle(const Style *);
+
+            /**
+             * Parses and returns a (possibly NULL) Style from the supplied OGR
+             * style string.
+             *
+             * Throws std::invalid_argument if the supplied OGR style string is
+             * NULL or if parsing fails.
+             */
+            static Style* parseStyle (const char* styleOGR);
+
+            StyleClass getClass() const NOTHROWS;
+
+            /**
+             * Returns an OGR feature style string.
+             */
+            virtual TAK::Engine::Util::TAKErr toOGR(TAK::Engine::Port::String &value) const NOTHROWS = 0;
+            virtual Style *clone() const = 0;
+        private:
+            static std::unique_ptr<Style> wrapLodStyle(unsigned int minLod, unsigned int maxLod, std::unique_ptr<Style> style);
+        public :
+            bool operator==(const Style &other) const NOTHROWS;
+            bool operator!=(const Style &other) const NOTHROWS;
+        private :
+            virtual bool equalsImpl(const Style &other) const NOTHROWS = 0;
+        private :
+            StyleClass styleClass;
+
+            friend class IconPointStyle;
+            friend class MeshPointStyle;
+            friend class BasicPointStyle;
+            friend class LabelPointStyle;
+            friend class BasicFillStyle;
+            friend class BasicStrokeStyle;
+            friend class CompositeStyle;
+            friend class PatternStrokeStyle;
+            friend class LevelOfDetailStyle;
+            friend class ArrowStrokeStyle;
+        };
+
+        class ENGINE_API BasicFillStyle : public Style
+        {
+        public:
+            /**
+             * @param color 0xAARRGGBB
+             */
+            BasicFillStyle (unsigned int color)   NOTHROWS;
+            ~BasicFillStyle () NOTHROWS
+            { }
+        public :
+            unsigned int getColor () const NOTHROWS
+            { return color; }
+        public : // Style INTERFACE
+            TAK::Engine::Util::TAKErr toOGR(TAK::Engine::Port::String &value) const NOTHROWS override;
+            virtual Style *clone() const override;
+        private :
+            virtual bool equalsImpl(const Style &other) const NOTHROWS override;
+        private:
+            unsigned int color;
+        };
+
+        class ENGINE_API BasicPointStyle : public Style
+        {
+        public:
+            /**
+             * Throws std::invalid_argument if the supplied size is negative.
+             * @param color 0xAARRGGBB
+             * @param size  Diameter in pixels.
+             */
+            BasicPointStyle (unsigned int color, float size);
+
+            ~BasicPointStyle () NOTHROWS
+              { }
+
+        public :
+            unsigned int getColor () const NOTHROWS
+              { return color; }
+
+            /**
+             * Returns diameter in pixels.
+             */
+            float getSize () const NOTHROWS
+              { return size; }
+        public ://  Style INTERFACE
+            Style * clone() const override;
+            TAK::Engine::Util::TAKErr toOGR(TAK::Engine::Port::String &value) const NOTHROWS override;
+        private :
+            virtual bool equalsImpl(const Style &other) const NOTHROWS override;
+        private:
+            unsigned int color;
+            float size;
+        };
+
+        class ENGINE_API BasicStrokeStyle : public Style
+        {
+        public:
+            /**
+             * Throws std::invalid_argument if the supplied width is negative.
+             * @param color         0xAARRGGBB
+             * @param width         Stroke width in pixels.
+             * @param extrusionMode The stroking extrusion mode
+             */
+            BasicStrokeStyle (unsigned int color, float width, const StrokeExtrusionMode extrusionMode = StrokeExtrusionMode::TEEM_Vertex);
+            ~BasicStrokeStyle () NOTHROWS
+            { }
+        public :
+            unsigned int getColor () const NOTHROWS
+            { return color; }
+
+            float getStrokeWidth () const NOTHROWS
+            { return width; }
+
+            StrokeExtrusionMode getExtrusionMode () const NOTHROWS
+            { return extrusionMode; }
+        public : //  Style INTERFACE
+            TAK::Engine::Util::TAKErr toOGR(TAK::Engine::Port::String &value) const NOTHROWS override;
+            virtual Style *clone() const override;
+        private :
+            virtual bool equalsImpl(const Style &other) const NOTHROWS override;
+        private:
+            unsigned int color;
+            float width;
+            StrokeExtrusionMode extrusionMode;
+        };
+
+
+        /**
+         * A concrete Style that is the composition of one or more Style
+         * instances.
+         * Composition allows for complex styling to achieved by sequentially
+         * rendering the geometry using multiple Styles.  Styles are always
+         * applied in FIFO order.
+         *
+         * For example, the following:
+         *     std::vector<Style*> styles (2);
+         *     styles.push_back (new BasicStrokeStyle (0xFFFFFFFF, 3));
+         *     styles.push_back (new BasicStrokeStyle (0xFF000000, 1));
+         *     CompositeStyle outlined (styles);
+         * Would create an outline stroking effect.  The geometry would first
+         * get stroked using a white line of 3 pixels, and then an additional
+         * black stroke of 1 pixel would be applied.
+         *
+         * It should be assumed that all component styles are applicable for the geometry to which the composite is applied.
+         */
+        class ENGINE_API CompositeStyle : public Style
+        {
+        public:
+            typedef std::shared_ptr<Style> StylePtr;
+            typedef std::vector<StylePtr> StyleVector;
+        public :
+            /**
+             * Throws std::invalid_argument if the supplied vector of Styles is empty or if one of the Styles in the vector is NULL.
+             * @param styles    Ownership of Style instances is transferred
+             */
+            CompositeStyle (const std::vector<Style*>& styles);
+            CompositeStyle (const std::shared_ptr<Style> *styles, const std::size_t count);
+            ~CompositeStyle () NOTHROWS
+            { }
+        public :
+            const StyleVector& components () const NOTHROWS
+            { return styles_; }
+
+            template <class StyleType>
+            StylePtr findStyle () const NOTHROWS;
+
+            TAK::Engine::Util::TAKErr findStyle(const Style **s, const StyleClass styleClass) NOTHROWS;
+
+            const Style& getStyle (std::size_t index) const;
+
+            std::size_t getStyleCount () const NOTHROWS
+            { return styles_.size (); }
+
+        public : //  Style INTERFACE
+            TAK::Engine::Util::TAKErr toOGR(TAK::Engine::Port::String &value) const NOTHROWS override;
+            virtual Style *clone() const override;
+        private :
+            virtual bool equalsImpl(const Style &other) const NOTHROWS override;
+        private:
+            StyleVector styles_;
+
+            friend ENGINE_API TAK::Engine::Util::TAKErr Style_recurse(const Style &style, const std::function<TAK::Engine::Util::TAKErr(const Style &style, const Style *parent)> &fn) NOTHROWS;
+        };
+
+        /**
+         * Icon style for Point geometry. Renders the Point using the specified
+         * icon.
+         *
+         * Icon rendering size is determined by scaling OR width & height. If
+         * scaling is 1.0, icon is rendered at original size.  If scaling is
+         * 0.0, width and height are absolute size in pixels.  If width or
+         * height is 0.0, the icon's original width or height is used.
+         */
+        class ENGINE_API IconPointStyle : public Style
+        {
+        public :
+            enum HorizontalAlignment
+            {
+                /** Aligned to the left of the Point. */
+                LEFT    = -1,
+                /** Horizontally centered on the Point. */
+                H_CENTER,
+                /** Aligned to the right of the Point. */
+                RIGHT
+            };
+
+            enum VerticalAlignment
+            {
+                /** Aligned above the Point. */
+                ABOVE   = -1,
+                /** Vertically centered on the Point. */
+                V_CENTER,
+                /** Aligned below the Point. */
+                BELOW
+            };
+        public:
+            /**
+             * Creates a new icon style with the supplied properties.
+             *
+             * The supplied scaling value specifies scale at which the icon
+             * should be rendered.  The icon's original size is used if the
+             * supplied value of scaling is the default value of 1.0.
+             *
+             * The supplied rotation should be specified in degrees.  If the
+             * supplied value of absoluteRotation is true, the rotation is
+             * relative to north (and the icon will rotate as the displayed
+             * direction of north changes).  If the supplied value of
+             * absoluteRotation is false, the rotation is relative to the
+             * screen (and the icon will not rotate as the displayed direction
+             * of north changes).
+             *
+             * The default arguments create a new icon style, centered on the
+             * Point at original size, displayed right side up (relative to the
+             * screen).
+             *
+             * Throws std::invalid_argument if the supplied icon URI is NULL or
+             * if the supplied scaling is negative.
+             *
+             * @param color             0xAARRGGBB
+             * @param scaling           defaults to 1.0, use original icon size
+             * @param hAlign            defaults to H_CENTER
+             * @param vAlign            defaults to V_CENTER
+             * @param rotation          default to 0.0
+             * @param absoluteRotation  defaults to false
+             */
+            IconPointStyle (unsigned int color,
+                            const char* iconURI,
+                            float scaling = 1.0,
+                            HorizontalAlignment hAlign = H_CENTER,
+                            VerticalAlignment vAlign = V_CENTER,
+                            float rotation = 0.0,
+                            bool absoluteRotation = false);
+
+            /**
+             * Creates a new icon style with the supplied properties.
+             *
+             * The supplied width and height values specify the rendered width
+             * and height (in pixels) of the icon.  The icon's original width
+             * or height is used if the width or height is specified as 0.0,
+             * respectively.
+             *
+             * The supplied rotation should be specified in degrees.  If the
+             * supplied value of absoluteRotation is true, the rotation is
+             * relative to north (and the icon will rotate as the displayed
+             * direction of north changes).  If the supplied value of
+             * absoluteRotation is false, the rotation is relative to the
+             * screen (and the icon will not rotate as the displayed direction
+             * of north changes).
+             *
+             * The default arguments create a new icon style, centered on the
+             * Point at the specified size, displayed right side up (relative
+             * to the screen).
+             *
+             * Throws std::invalid_argument if the supplied icon URI is NULL or
+             * if the supplied width or height is negative.
+             *
+             * @param color             0xAARRGGBB
+             * @param width             Rendered width in pixels.
+             * @param height            Rendered height in pixels.
+             * @param hAlign            defaults to H_CENTER,
+             * @param vAlign            defaults to V_CENTER,
+             * @param rotation          defaults to 0.0
+             * @param absoluteRotation  defaults to false
+             */
+            IconPointStyle (unsigned int color,
+                            const char* iconURI,
+                            float width,
+                            float height,
+                            HorizontalAlignment hAlign = H_CENTER,
+                            VerticalAlignment vAlign = V_CENTER,
+                            float rotation = 0.0,
+                            bool absoluteRotation = false);
+
+            IconPointStyle (unsigned int color,
+                            const char* iconURI,
+                            float width,
+                            float height,
+                            float offsetX,
+                            float offsetY,
+                            HorizontalAlignment hAlign = H_CENTER,
+                            VerticalAlignment vAlign = V_CENTER,
+                            float rotation = 0.0,
+                            bool absoluteRotation = false);
+
+            ~IconPointStyle () NOTHROWS
+            { }
+        public :
+            /** 0xAARRGGBB */
+            unsigned int getColor () const NOTHROWS
+            { return color; }
+
+            /** Height in pixels if scaling is 0. */
+            float getHeight () const NOTHROWS
+            { return height; }
+
+            HorizontalAlignment getHorizontalAlignment () const NOTHROWS
+              { return hAlign; }
+
+            const char* getIconURI () const NOTHROWS
+              { return iconURI; }
+
+            /** Returns rotation in degrees. */
+            float getRotation () const NOTHROWS
+            { return rotation; }
+
+            VerticalAlignment getVerticalAlignment () const NOTHROWS
+              { return vAlign; }
+
+            /** Returns 0.0 if width & height are set. */
+            float getScaling () const NOTHROWS
+              { return scaling; }
+
+            /** Width in pixels if scaling is 0. */
+            float getWidth () const NOTHROWS
+              { return width; }
+
+            /** Absolute == relative to north. */
+            bool isRotationAbsolute ()  const NOTHROWS
+              { return absoluteRotation; }
+
+            float getOffsetX()  const NOTHROWS
+              { return offsetX; }
+            float getOffsetY()  const NOTHROWS
+              { return offsetY; }
+        public ://  Style INTERFACE
+            TAK::Engine::Util::TAKErr toOGR(TAK::Engine::Port::String &value) const NOTHROWS override;
+            virtual Style *clone() const override;
+        private :
+            virtual bool equalsImpl(const Style &other) const NOTHROWS override;
+        private:
+            unsigned int color;
+            TAK::Engine::Port::String iconURI;
+            HorizontalAlignment hAlign;
+            VerticalAlignment vAlign;
+            float scaling;
+            float width;
+            float height;
+            float rotation;
+            bool absoluteRotation;
+            float offsetX;
+            float offsetY;
+        };
+
+        /**
+         * Mesh style for Point geometry. Renders the Point using the specified
+         * mesh.
+         */
+        class ENGINE_API MeshPointStyle : public Style
+        {
+        public:
+            /**
+             * Creates a new mesh style with the supplied properties.
+             *
+             * Throws std::invalid_argument if the supplied mesh URI is NULL or if
+             * the transform doesn't have 16 elements.
+             *
+             * @param meshURI           the mesh uri
+             * @param color             0xAARRGGBB
+             * @param transform         the local transform
+             */
+            MeshPointStyle (const char* meshURI,
+                            unsigned int color,
+                            const float* transform);
+
+            ~MeshPointStyle () NOTHROWS
+            { }
+        public :
+            const char* getMeshURI () const NOTHROWS
+            { return meshURI; }
+
+            /** 0xAARRGGBB */
+            unsigned int getColor () const NOTHROWS
+            { return color; }
+
+            const float* getTransform()  const NOTHROWS
+            { return transform; }
+        public ://  Style INTERFACE
+            TAK::Engine::Util::TAKErr toOGR(TAK::Engine::Port::String &value) const NOTHROWS override;
+            virtual Style *clone() const override;
+        private :
+            virtual bool equalsImpl(const Style &other) const NOTHROWS override;
+        private:
+            TAK::Engine::Port::String meshURI;
+            unsigned int color;
+            float transform[16];
+        };
+
+        class ENGINE_API LabelPointStyle : public Style
+        {
+        public :
+            enum HorizontalAlignment
+            {
+                /** Aligned to the left of the Point. */
+                LEFT    = -1,
+                /** Horizontally centered on the Point. */
+                H_CENTER,
+                /** Aligned to the right of the Point. */
+                RIGHT
+            };
+
+            enum VerticalAlignment
+            {
+                /** Aligned above the Point. */
+                ABOVE   = -1,
+                /** Vertically centered on the Point. */
+                V_CENTER,
+                /** Aligned below the Point. */
+                BELOW
+            };
+        public:
+            enum ScrollMode
+            {
+                /** Use system-wide setting. */
+                DEFAULT,
+                /**  Label scrolls if longer than a width specified by the system. */
+                ON,
+                /**  Label is always fully displayed. */
+                OFF
+            };
+        public:
+            enum Style
+            {
+                BOLD = 0x01,
+                ITALIC = 0x02,
+                UNDERLINE = 0x04,
+                STRIKETHROUGH = 0x08,
+            };
+        public :
+
+        /**
+         * Creates a new label style with the supplied properties.
+         *
+         * The supplied textSize is in points.  The system's default font size is used when textSize is specified as 0.
+         *
+         * The supplied rotation should be specified in degrees.  If the supplied value of absoluteRotation is true, the rotation is relative to north (and the icon will rotate as the displayed direction of north changes).  If the supplied value of absoluteRotation is false, the rotation is relative to the screen (and the icon will not rotate as the displayed direction of north changes).
+         *
+         * The label scale controls render size of the label. 1.0 (the default) results in no scaling performed.
+         *
+         * The default arguments create a new label style, centered on the Point at default system font size, displayed right side up (relative to the screen).
+         *
+         * Throws std::invalid_argument if the supplied label text is NULL or if the supplied textSize is negative.
+        */
+        LabelPointStyle (const char* text,
+                         unsigned int textColor,    // 0xAARRGGBB
+                         unsigned int backColor,    // 0xAARRGGBB
+                         ScrollMode mode,
+                         const char *face = nullptr,
+                         float textSize = 0.0,      // Use system default size.
+                         LabelPointStyle::Style style = (LabelPointStyle::Style)0,
+                         float offsetX = 0.0,
+                         float offsetY = 0.0,
+                         HorizontalAlignment hAlign = H_CENTER,
+                         VerticalAlignment vAlign = V_CENTER,
+                         float rotation = 0.0,      // 0 degrees of rotation.
+                         bool absoluteRotation = false, // Relative to screen.
+                         float paddingX = 0.0, // offset from alignment position
+                         float paddingY = 0.0,
+                         double labelMinRenderResolution = 13.0,
+                         float labelScale = 1.0,
+                         unsigned maxTextWidth = 0u);
+        LabelPointStyle (const char* text,
+                         unsigned int textColor,    // 0xAARRGGBB
+                         unsigned int backColor,    // 0xAARRGGBB
+                         unsigned int outlineCOlor, // 0xAARRGGBB
+                         ScrollMode mode,
+                         const char *face = nullptr,
+                         float textSize = 0.0,      // Use system default size.
+                         LabelPointStyle::Style style = (LabelPointStyle::Style)0,
+                         float offsetX = 0.0,
+                         float offsetY = 0.0,
+                         HorizontalAlignment hAlign = H_CENTER,
+                         VerticalAlignment vAlign = V_CENTER,
+                         float rotation = 0.0,      // 0 degrees of rotation.
+                         bool absoluteRotation = false, // Relative to screen.
+                         float paddingX = 0.0, // offset from alignment position
+                         float paddingY = 0.0,
+                         double labelMinRenderResolution = 13.0,
+                         float labelScale = 1.0,
+                         unsigned maxTextWidth = 0u);
+
+        ~LabelPointStyle () NOTHROWS
+          { }
+        public :
+            /** Returns 0xAARRGGB. */
+            unsigned int getBackgroundColor () const NOTHROWS
+              { return backColor; }
+
+            HorizontalAlignment getHorizontalAlignment () const NOTHROWS
+              { return hAlign; }
+
+            /** Returns rotation in degrees. */
+            float getRotation () const NOTHROWS
+              { return rotation; }
+
+            ScrollMode getScrollMode () const NOTHROWS
+              { return scrollMode; }
+
+            const char* getText () const NOTHROWS
+              { return text; }
+
+            /** Returns 0xAARRGGBB. */
+            unsigned int getTextColor ()  const NOTHROWS
+              { return foreColor; }
+
+            /** Returns size in points (or 0). */
+            float getTextSize () const NOTHROWS
+              { return textSize; }
+
+            VerticalAlignment getVerticalAlignment () const NOTHROWS
+              { return vAlign; }
+
+            float getPaddingX() const NOTHROWS
+              { return paddingX; }
+
+            float getPaddingY() const NOTHROWS
+              { return paddingY; }
+
+            /**  Absolute == relative to north. */
+            bool isRotationAbsolute () const NOTHROWS
+              { return absoluteRotation; }
+
+            double getLabelMinRenderResolution() const NOTHROWS 
+              { return labelMinRenderResolution; }
+
+            float getLabelScale() const NOTHROWS
+              { return labelScale; }
+
+           float getOffsetX() const NOTHROWS
+             { return offsetX; }
+           float getOffsetY() const NOTHROWS
+             { return offsetY; }
+
+           LabelPointStyle::Style getStyle() const NOTHROWS
+             { return style; }
+
+           unsigned int getOutlineColor() const NOTHROWS
+             { return outlineColor; }
+
+           const char *getFontFace() const NOTHROWS
+             { return face; }
+
+           unsigned int getMaxTextWidth() const NOTHROWS
+            { return maxTextWidth; }
+
+        public : //  Style INTERFACE
+            TAK::Engine::Util::TAKErr toOGR(TAK::Engine::Port::String &value) const NOTHROWS override;
+            virtual atakmap::feature::Style* clone() const override;
+        private :
+            virtual bool equalsImpl(const atakmap::feature::Style &other) const NOTHROWS override;
+        private:
+            TAK::Engine::Port::String text;
+            unsigned int foreColor;
+            unsigned int backColor;
+            ScrollMode scrollMode;
+            HorizontalAlignment hAlign;
+            VerticalAlignment vAlign;
+            float textSize;
+            float rotation;
+            float paddingX;
+            float paddingY;
+            bool absoluteRotation;
+            double labelMinRenderResolution; 
+            float labelScale;
+            float offsetX;
+            float offsetY;
+            LabelPointStyle::Style style;
+            unsigned int outlineColor;
+            TAK::Engine::Port::String face;
+            unsigned int maxTextWidth;
+        };
+
+        class ENGINE_API PatternStrokeStyle : public Style
+        {
+        public :
+        /**
+         * Creates a new patterned storke style with the supplied properties.
+         *
+         * Throws std::invalid_argument if 'patternLen' is less than 2 or not a power-of-two.
+        */
+        PatternStrokeStyle (const std::size_t factor,
+                            const uint16_t pattern,
+                            const unsigned int color,
+                            const float strokeWidth,
+                            const StrokeExtrusionMode extrusionMode = StrokeExtrusionMode::TEEM_Vertex,
+                            const bool cap = true);
+        protected:
+        PatternStrokeStyle (const StyleClass clazz,
+                            const std::size_t factor,
+                            const uint16_t pattern,
+                            const unsigned int color,
+                            const float strokeWidth,
+                            const StrokeExtrusionMode extrusionMode = StrokeExtrusionMode::TEEM_Vertex,
+                            const bool cap = true);
+        public :
+        ~PatternStrokeStyle () NOTHROWS
+          { }
+        public :
+            uint16_t getPattern() const NOTHROWS;
+            std::size_t getFactor() const NOTHROWS;
+            /** Returns 0xAARRGGB. */
+            unsigned int getColor () const NOTHROWS;
+            float getStrokeWidth() const NOTHROWS;
+            StrokeExtrusionMode getExtrusionMode () const NOTHROWS;
+            bool getEndCap() const NOTHROWS;
+        public : //  Style INTERFACE
+            TAK::Engine::Util::TAKErr toOGR(TAK::Engine::Port::String &value) const NOTHROWS override;
+            virtual Style *clone() const override;
+        private :
+            virtual bool equalsImpl(const Style &other) const NOTHROWS override;
+        private:
+            uint16_t pattern;
+            std::size_t factor;
+            unsigned int color;
+            float width;
+            StrokeExtrusionMode extrusionMode;
+            bool endCap;
+
+            friend class ArrowStrokeStyle;
+        };
+
+        class ENGINE_API ArrowStrokeStyle : public PatternStrokeStyle
+        {
+        public :
+        /**
+         * Creates a new patterned storke style with the supplied properties.
+         *
+         * Throws std::invalid_argument if 'patternLen' is less than 2 or not a power-of-two.
+        */
+        ArrowStrokeStyle (const float arrowRadius,
+                            const std::size_t factor,
+                            const uint16_t pattern,
+                            const unsigned int color,
+                            const float strokeWidth,
+                            const StrokeExtrusionMode extrusionMode = StrokeExtrusionMode::TEEM_Vertex,
+                            const ArrowHeadMode arrowHeadMode = ArrowHeadMode::TEAH_OnlyLast);
+
+        ~ArrowStrokeStyle () NOTHROWS
+          { }
+        public :
+            float getArrowRadius() const NOTHROWS;
+            ArrowHeadMode getArrowHeadMode() const NOTHROWS;
+        public : //  Style INTERFACE
+            TAK::Engine::Util::TAKErr toOGR(TAK::Engine::Port::String &value) const NOTHROWS override;
+            virtual Style *clone() const override;
+        private :
+            virtual bool equalsImpl(const Style &other) const NOTHROWS override;
+        private:
+            float arrowRadius;
+            ArrowHeadMode arrowHeadMode;
+        };
+
+        /**
+         * Defines a style that is only to be displayed at specific levels-of-detail
+         */
+        class ENGINE_API LevelOfDetailStyle : public Style
+        {
+        public :
+            static constexpr std::size_t MIN_LOD = 0u;
+            static constexpr std::size_t MAX_LOD = 33u;
+        public :
+        /**
+         * @param style     The underlying style
+         * @param minLod    The minimum level of detail (inclusive)
+         * @param maxLod    The maximum level of detail (exclusive)
+         */
+        LevelOfDetailStyle (const Style &style, const std::size_t minLod, const std::size_t maxLod);
+
+        /**
+         * @param style     The underlying style
+         * @param minLod    The minimum level of detail (inclusive)
+         * @param maxLod    The maximum level of detail (exclusive)
+         */
+        LevelOfDetailStyle (const std::shared_ptr<Style> &style, const std::size_t minLod, const std::size_t maxLod);
+
+        LevelOfDetailStyle (const Style **style, const std::size_t *lod, const std::size_t count);
+        LevelOfDetailStyle (const std::shared_ptr<Style> *style, const std::size_t *lod, const std::size_t count);
+
+        ~LevelOfDetailStyle () NOTHROWS
+          { }
+        public :
+            const Style &getStyle() const NOTHROWS;
+            std::shared_ptr<const Style> getStyle(const std::size_t lod) const NOTHROWS;
+            std::shared_ptr<const Style> getStyle(const double lod) const NOTHROWS;
+            std::size_t getMinLevelOfDetail() const NOTHROWS;
+            std::size_t getMaxLevelOfDetail() const NOTHROWS;
+            bool isContinuous() const NOTHROWS;
+            std::size_t getLevelOfDetailCount() const NOTHROWS;
+            std::size_t getLevelOfDetail(const std::size_t idx) const NOTHROWS;
+        public : //  Style INTERFACE
+            TAK::Engine::Util::TAKErr toOGR(TAK::Engine::Port::String &value) const NOTHROWS override;
+            virtual Style *clone() const override;
+        private :
+            virtual bool equalsImpl(const Style &other) const NOTHROWS override;
+        private:
+            std::vector<std::shared_ptr<Style>> styles;
+            std::vector<std::size_t> lods;
+
+            friend ENGINE_API TAK::Engine::Util::TAKErr Style_recurse(const Style &style, const std::function<TAK::Engine::Util::TAKErr(const Style &style, const Style *parent)> &fn) NOTHROWS;
+        };
+
+        ENGINE_API TAK::Engine::Util::TAKErr Style_parseStyle(StylePtr &value, const char *ogr) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr Style_parseStyle(StylePtr_Const &value, const char *ogr) NOTHROWS;
+
+        ENGINE_API TAK::Engine::Util::TAKErr BasicFillStyle_create(StylePtr &value, const unsigned int color) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr BasicPointStyle_create(StylePtr &value, const unsigned int color, const float size) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr BasicStrokeStyle_create(StylePtr &value, const unsigned int color, const float width,
+                                                                     const StrokeExtrusionMode extrusionMode = StrokeExtrusionMode::TEEM_Vertex) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr CompositeStyle_create(StylePtr &value, const Style **styles, const std::size_t count) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr CompositeStyle_create(StylePtr &value, const std::shared_ptr<Style> *styles, const std::size_t count) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr IconPointStyle_create(StylePtr &value, unsigned int color,
+                                                                                    const char* iconURI,
+                                                                                    float scaleFactor = 1.0,
+                                                                                    IconPointStyle::HorizontalAlignment hAlign = IconPointStyle::H_CENTER,
+                                                                                    IconPointStyle::VerticalAlignment vAlign = IconPointStyle::V_CENTER,
+                                                                                    float rotation = 0.0,
+                                                                                    bool absoluteRotation = false) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr IconPointStyle_create(StylePtr &value, unsigned int color,
+                                                                                    const char* iconURI,
+                                                                                    float width,
+                                                                                    float height,
+                                                                                    float offsetX = 0.0,
+                                                                                    float offsetY = 0.0,
+                                                                                    IconPointStyle::HorizontalAlignment hAlign = IconPointStyle::H_CENTER,
+                                                                                    IconPointStyle::VerticalAlignment vAlign = IconPointStyle::V_CENTER,
+                                                                                    float rotation = 0.0,
+                                                                                    bool absoluteRotation = false) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr MeshPointStyle_create(StylePtr &value,const char* meshURI,
+                                                                   unsigned int color,
+                                                                   const float* transform) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr LabelPointStyle_create(StylePtr &value, const char* text,
+                                                                                     unsigned int textColor,    // 0xAARRGGBB
+                                                                                     unsigned int backColor,    // 0xAARRGGBB
+                                                                                     LabelPointStyle::ScrollMode mode,
+                                                                                     float textSize = 0.0,      // Use system default size.
+                                                                                     float offsetX = 0.0,
+                                                                                     float offsetY = 0.0,
+                                                                                     LabelPointStyle::HorizontalAlignment hAlign = LabelPointStyle::H_CENTER,
+                                                                                     LabelPointStyle::VerticalAlignment vAlign = LabelPointStyle::V_CENTER,
+                                                                                     float rotation = 0.0,      // 0 degrees of rotation.
+                                                                                     bool absoluteRotation = false, // Relative to screen.
+                                                                                     float paddingX = 0.0, // offset from alignment position
+                                                                                     float paddingY = 0.0,
+                                                                                     double labelMinRenderResolution = 13.0,
+                                                                                     float labelScale = 1.0) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr LabelPointStyle_create(StylePtr &value, const char* text,
+                                                                                     unsigned int textColor,    // 0xAARRGGBB
+                                                                                     unsigned int backColor,    // 0xAARRGGBB
+                                                                                     LabelPointStyle::ScrollMode mode,
+                                                                                     const char* fontFace,
+                                                                                     float textSize = 0.0,      // Use system default size.
+                                                                                     int style = 0,
+                                                                                     float offsetX = 0.0,
+                                                                                     float offsetY = 0.0,
+                                                                                     LabelPointStyle::HorizontalAlignment hAlign = LabelPointStyle::H_CENTER,
+                                                                                     LabelPointStyle::VerticalAlignment vAlign = LabelPointStyle::V_CENTER,
+                                                                                     float rotation = 0.0,      // 0 degrees of rotation.
+                                                                                     bool absoluteRotation = false, // Relative to screen.
+                                                                                     float paddingX = 0.0, // offset from alignment position
+                                                                                     float paddingY = 0.0,
+                                                                                     double labelMinRenderResolution = 13.0,
+                                                                                     float labelScale = 1.0) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr PatternStrokeStyle_create(StylePtr &value, const std::size_t factor,
+                                                                                        const uint16_t pattern,
+                                                                                        const unsigned int color,
+                                                                                        const float strokeWidth,
+                                                                                        const StrokeExtrusionMode extrusionMode = StrokeExtrusionMode::TEEM_Vertex) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr ArrowStrokeStyle_create(StylePtr &value, const float arrowRadius,
+                                                                                      const std::size_t factor,
+                                                                                      const uint16_t pattern,
+                                                                                      const unsigned int color,
+                                                                                      const float strokeWidth,
+                                                                                      const StrokeExtrusionMode extrusionMode = StrokeExtrusionMode::TEEM_Vertex,
+                                                                                      const ArrowHeadMode arrowHeadMode = ArrowHeadMode::TEAH_OnlyLast) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr LevelOfDetailStyle_create(StylePtr &value, const Style &style,
+                                                                                        const std::size_t minLod,
+                                                                                        const std::size_t maxLod) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr LevelOfDetailStyle_create(StylePtr &value, const std::shared_ptr<Style> &style,
+                                                                                        const std::size_t minLod,
+                                                                                        const std::size_t maxLod) NOTHROWS;
+
+
+        ENGINE_API TAK::Engine::Util::TAKErr LevelOfDetailStyle_create(StylePtr &value, const Style **style,
+                                                                                        const std::size_t *lod,
+                                                                                        const std::size_t count) NOTHROWS;
+        ENGINE_API TAK::Engine::Util::TAKErr LevelOfDetailStyle_create(StylePtr &value, const std::shared_ptr<Style> *style,
+                                                                                        const std::size_t *lod,
+                                                                                        const std::size_t count) NOTHROWS;
+
+        ENGINE_API TAK::Engine::Util::TAKErr LevelOfDetailStyle_addLodToOGRStyle(TAK::Engine::Port::String& ogrStyle, const std::size_t minLod, const std::size_t maxLod) NOTHROWS;
+
+        ENGINE_API TAK::Engine::Util::TAKErr Style_recurse(const Style &style, const std::function<TAK::Engine::Util::TAKErr(const Style &style, const Style *parent)> &fn) NOTHROWS;
+    }
+}
+
+namespace atakmap {
+    namespace feature {
+
+        template <class StyleType>
+        inline CompositeStyle::StylePtr CompositeStyle::findStyle () const NOTHROWS
+        {
+            StylePtr result;
+            const StyleVector::const_iterator end (styles_.end ());
+
+            for (StyleVector::const_iterator iter (styles_.begin ());
+                 !result && iter != end;
+                 ++iter) {
+
+                const CompositeStyle *composite(nullptr);
+
+                if (dynamic_cast<const StyleType*> (iter->get ())) {
+                    result = *iter;
+                } else if ((composite = dynamic_cast<const CompositeStyle*> (iter->get ())), composite != nullptr) {
+                    result = composite->findStyle<StyleType> ();
+                }
+            }
+
+            return result;
+        }
+    }
+}
+
+#endif  // #ifndef ATAKMAP_FEATURE_STYLE_H_INCLUDED

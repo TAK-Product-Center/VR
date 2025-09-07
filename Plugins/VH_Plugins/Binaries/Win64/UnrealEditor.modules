@@ -1,0 +1,8 @@
+{
+	"BuildId": "d0b35554-bfb7-44ad-a3cf-87c7de6495e5",
+	"Modules": 
+	{
+		"VH_Plugins": "UnrealEditor-VH_Plugins.dll",
+		"VH_PluginsEditor": "UnrealEditor-VH_PluginsEditor.dll"
+	}
+}

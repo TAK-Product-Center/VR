@@ -1,0 +1,344 @@
+#include "renderer/core/GLAsynchronousMapRenderable3.h"
+
+#include <sstream>
+#include <string>
+
+#include "feature/SpatialCalculator2.h"
+#include "raster/osm/OSMUtils.h"
+#include "util/Memory.h"
+
+using namespace TAK::Engine::Renderer::Core;
+
+using namespace TAK::Engine::Feature;
+using namespace TAK::Engine::Port;
+using namespace TAK::Engine::Renderer::Core::Controls;
+using namespace TAK::Engine::Thread;
+using namespace TAK::Engine::Util;
+
+GLAsynchronousMapRenderable3::GLAsynchronousMapRenderable3() NOTHROWS :
+    thread_(nullptr, nullptr),
+    initialized_(false),
+    servicing_request_(false),
+    invalid_(false),
+    cancelled_(false),
+    monitor_(TEMT_Recursive),
+    context_(nullptr),
+    surface_ctrl_(nullptr),
+    need_render_tiles_(false),
+    check_surface_intersect_(true)
+{
+    prepared_state_.drawVersion = -1;
+    target_state_.drawVersion = -1;
+}
+
+GLAsynchronousMapRenderable3::~GLAsynchronousMapRenderable3() NOTHROWS
+{
+    release();
+}
+
+int GLAsynchronousMapRenderable3::getBackgroundThreadPriority() const NOTHROWS
+{
+    return 0;
+}
+
+TAKErr GLAsynchronousMapRenderable3::getBackgroundThreadName(TAK::Engine::Port::String &value) NOTHROWS
+{
+#ifdef _MSC_VER
+    std::string s = "GLAsyncMapRenderableThread-";
+    s += std::to_string((uintptr_t)this);
+#else
+    std::ostringstream strm;
+    strm << "GLAsyncMapRenderableThread-" << ((uintptr_t)this);
+    const auto s = strm.str();
+#endif
+
+    value = s.c_str();
+    return TE_Ok;
+}
+
+bool GLAsynchronousMapRenderable3::shouldQuery() NOTHROWS
+{
+    return invalid_ ||
+        (prepared_state_.drawVersion != target_state_.drawVersion);
+}
+
+bool GLAsynchronousMapRenderable3::shouldCancel() NOTHROWS
+{
+    return false;
+}
+
+void GLAsynchronousMapRenderable3::initImpl(const GLGlobeBase &view) NOTHROWS
+{}
+
+void GLAsynchronousMapRenderable3::invalidateNoSync() NOTHROWS
+{
+    if (!invalid_) {
+        invalid_ = true;
+        if (surface_ctrl_ && (getRenderPass()&(GLGlobeBase::Surface|GLGlobeBase::SurfacePrefetch))) {
+            surface_ctrl_->markDirty();
+        }
+
+        if (context_)
+            context_->requestRefresh();
+    }
+}
+
+void GLAsynchronousMapRenderable3::invalidate() NOTHROWS
+{
+    Monitor::Lock lock(monitor_);
+    invalidateNoSync();
+}
+
+void GLAsynchronousMapRenderable3::interruptQuery(QueryContext &context, const bool release) NOTHROWS
+{}
+
+void GLAsynchronousMapRenderable3::draw(const GLGlobeBase &view, int renderPass) NOTHROWS
+{
+    if (!(renderPass&getRenderPass()))
+        return;
+
+    TAKErr code(TE_Ok);
+
+    Monitor::Lock lock(monitor_);
+    code = lock.status;
+
+    if (!initialized_) {
+        context_ = &view.context;
+        void *surfaceControl = nullptr;
+        if(view.getControl(&surfaceControl, SurfaceRendererControl_getType()) == TE_Ok)
+            surface_ctrl_ = static_cast<SurfaceRendererControl *>(surfaceControl);
+
+        // force refresh
+        prepared_state_.drawVersion = ~view.renderPasses[0u].drawVersion;
+        target_state_ = *view.renderPass;
+        // deep copy terrain tiles
+        if(need_render_tiles_)
+            target_state_.renderTiles.own();
+        target_state_.drawVersion = ~view.renderPasses[0u].drawVersion;
+        invalid_ = true;
+
+        background_worker_.reset(new WorkerThread(*this));
+
+        ThreadCreateParams tparams;
+        this->getBackgroundThreadName(tparams.name);
+        // XXX - conversion from int to priority
+        //tparams.priority = this->getBackgroundThreadPriority();
+
+        Thread_start(thread_, WorkerThread::asyncRun, background_worker_.get(), tparams);
+
+        initImpl(view);
+
+        initialized_ = true;
+    }
+    cancelled_ = false;
+
+    const bool hasNonSurface = !!(getRenderPass()&~(GLGlobeBase::Surface|GLGlobeBase::SurfacePrefetch));
+    const int passTest = hasNonSurface ? ~(GLGlobeBase::Surface|GLGlobeBase::SurfacePrefetch) : getRenderPass();
+        
+    // if the target state has not already been computed for the pump and
+    // it is a sprite pass if there is any sprite content or there is a pass
+    // match and there is not any sprite content, update the target state
+    if ((target_state_.drawVersion != view.renderPasses[0u].drawVersion) && (passTest & renderPass) != 0) {
+        target_state_ = view.renderPasses[0u];
+        if (surface_ctrl_ && !hasNonSurface && target_state_.surfaceBounds.count) {
+            // collect the MAXIMUM resolution across all surface tiles
+            double maxSurfaceGsd = std::numeric_limits<double>::max();
+            for (std::size_t i = 0u; i < target_state_.surfaceBounds.count; i++) {
+                const auto region = target_state_.surfaceBounds.value[i];
+                const auto gsd = atakmap::raster::osm::OSMUtils::mapnikTileResolution((int)(log(180.0 / (region.maxY - region.minY)) / log(2.0))) / 8.0;
+                if(gsd < maxSurfaceGsd)
+                    maxSurfaceGsd = gsd;
+            }
+            // if there is a significant mismatch between the current surface resolution and the
+            // scene resolution, cap at the surface resolution. this situation can happen during
+            // rapid zoom changes where low res tiles are still present and artificially inflate
+            // the reported bounds.
+            target_state_.drawMapResolution = std::max(target_state_.drawMapResolution, maxSurfaceGsd / 2.0);
+        }
+        // deep copy terrain tiles
+        if(need_render_tiles_)
+            target_state_.renderTiles.own();
+    }
+    if (shouldQuery()) {
+        if (!servicing_request_) {
+            lock.signal();
+        } else if (shouldCancel()){
+            cancelled_ = true;
+            lock.signal();
+        }
+    }
+
+    // if surface only pass, ignore outside of current AOI
+    if (check_surface_intersect_ && (renderPass & ~(GLGlobeBase::Surface | GLGlobeBase::SurfacePrefetch)) == 0) {
+        Envelope2 aois[2];
+        std::size_t numAois = 0u;
+        if (prepared_state_.crossesIDL) {
+            aois[numAois++] = Envelope2(prepared_state_.westBound, prepared_state_.southBound, 0.0, 180.0, prepared_state_.northBound, 0.0);
+            aois[numAois++] = Envelope2(-180.0, prepared_state_.southBound, 0.0, prepared_state_.eastBound, prepared_state_.northBound, 0.0);
+        } else {
+            aois[numAois++] = Envelope2(prepared_state_.westBound, prepared_state_.southBound, 0.0, prepared_state_.eastBound, prepared_state_.northBound, 0.0);
+        }
+        bool isect = false;
+        for (std::size_t i = 0; i < numAois; i++)
+            isect |= SpatialCalculator_intersects(Envelope2(view.renderPass->westBound, view.renderPass->southBound, 0.0, view.renderPass->eastBound, view.renderPass->northBound, 0.0), aois[i]);
+        if (!isect)
+            return;
+    }
+
+    // lock the renderables for read
+    ReadLock rlock(renderables_mutex_);
+    code = lock.status;
+    if (code != TE_Ok)
+        return;
+
+    Collection<GLMapRenderable2 *>::IteratorPtr iter(nullptr, nullptr);
+    code = this->getRenderables(iter);
+    if (code == TE_Done)
+        return;
+
+    do {
+        GLMapRenderable2 *renderable;
+        code = iter->get(renderable);
+        TE_CHECKBREAK_CODE(code);
+        renderable->draw(view, renderPass);
+        code = iter->next();
+        TE_CHECKBREAK_CODE(code);
+    } while (true);
+    if (code == TE_Done)
+        code = TE_Ok;
+
+    iter.reset();
+}
+
+void GLAsynchronousMapRenderable3::release() NOTHROWS
+{
+    std::unique_ptr<WorkerThread> deadWorker(background_worker_.release());
+    // acquire lock
+    {
+        Monitor::Lock lock(monitor_);
+        if (!initialized_)
+            return;
+
+        cancelled_ = true;
+        if(deadWorker && deadWorker->pending_data_)
+            interruptQuery(*deadWorker->pending_data_, true);
+        lock.signal();
+        // release lock
+    }
+
+
+    if(thread_) {
+        thread_->join();
+        thread_.reset();
+    }
+    deadWorker.reset();
+
+    // acquire lock
+    {
+        Monitor::Lock lock(monitor_);
+
+        {
+            WriteLock wlock(renderables_mutex_);
+            releaseImpl();
+        }
+
+        initialized_ = false;
+        // release lock
+    }
+
+    if (surface_ctrl_) {
+        surface_ctrl_->markDirty();
+        surface_ctrl_ = nullptr;
+    }
+}
+
+TAKErr GLAsynchronousMapRenderable3::releaseImpl() NOTHROWS
+{
+    return TE_Ok;
+}
+
+/*****************************************************************************/
+// Worker Thread
+
+GLAsynchronousMapRenderable3::WorkerThread::WorkerThread(GLAsynchronousMapRenderable3 &owner) :
+    owner_(owner),
+    pending_data_(nullptr)
+{}
+
+void* GLAsynchronousMapRenderable3::WorkerThread::asyncRun(void* self)
+{
+    if (self)
+    {
+        auto* worker(static_cast<WorkerThread*> (self));
+
+        worker->asyncRunImpl();
+    }
+    return nullptr;
+}
+
+void GLAsynchronousMapRenderable3::WorkerThread::asyncRunImpl() {
+    TAKErr code;
+    QueryContextPtr pendingData(nullptr, nullptr);
+    try {
+        code = owner_.createQueryContext(pendingData);
+        pending_data_ = pendingData.get();
+        GLGlobeBase::State queryState;
+        while (true) {
+            {
+                Monitor::Lock lock(owner_.monitor_);
+                if (owner_.background_worker_.get() != this) {
+                    break;
+                }
+
+                // update release/renderable collections
+                {
+                    owner_.surface_dirty_regions_.clear();
+                    if (owner_.prepared_state_.crossesIDL) {
+                        owner_.surface_dirty_regions_.push_back(Envelope2(owner_.prepared_state_.westBound, owner_.prepared_state_.southBound, 0.0, 180.0, owner_.prepared_state_.northBound, 0.0));
+                        owner_.surface_dirty_regions_.push_back(Envelope2(-180.0, owner_.prepared_state_.southBound, 0.0, owner_.prepared_state_.eastBound, owner_.prepared_state_.northBound, 0.0));
+                    } else {
+                        owner_.surface_dirty_regions_.push_back(Envelope2(owner_.prepared_state_.westBound, owner_.prepared_state_.southBound, 0.0, owner_.prepared_state_.eastBound, owner_.prepared_state_.northBound, 0.0));
+                    }
+                    WriteLock wlock(owner_.renderables_mutex_);
+                    code = wlock.status;
+                    TE_CHECKBREAK_CODE(code);
+                    if (owner_.servicing_request_ && owner_.updateRenderableLists(*pendingData) == TE_Ok) {
+                        owner_.prepared_state_ = queryState;
+                        if (owner_.surface_ctrl_ && (owner_.getRenderPass()&(GLGlobeBase::Surface|GLGlobeBase::SurfacePrefetch))) {
+                            for (std::size_t i = 0u; i < owner_.surface_dirty_regions_.size(); i++)
+                                owner_.surface_ctrl_->markDirty(owner_.surface_dirty_regions_[i], false);
+                        }
+                        if (owner_.context_)
+                            owner_.context_->requestRefresh();
+                    }
+                }
+
+                owner_.resetQueryContext(*pendingData);
+                owner_.servicing_request_ = false;
+
+                // check the state and wait if appropriate
+                if (!owner_.shouldQuery()) {
+                    lock.wait(); // XXX - exceptions previously ignored, need to handle any codes???
+                    continue;
+                }
+
+                // copy the target state to query outside of the
+                // synchronized block
+                queryState = owner_.target_state_;
+                if (owner_.need_render_tiles_)
+                    queryState.renderTiles.own();
+                else
+                    queryState.renderTiles.count = 0u;
+                owner_.invalid_ = false;
+                owner_.servicing_request_ = true;
+                owner_.cancelled_ = false;
+            }
+
+            code = owner_.query(*pendingData, queryState);
+        }
+    }
+    catch (...) { }
+    owner_.servicing_request_ = false;
+}
+
+GLAsynchronousMapRenderable3::QueryContext::~QueryContext() { }

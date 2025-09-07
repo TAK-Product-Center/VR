@@ -1,0 +1,34 @@
+{
+	"FileVersion": 3,
+
+	"FriendlyName": "VH_VR",
+	"Version": 1,
+	"VersionName": "1.0",
+	"CreatedBy": "Applied Research Associates / Virtual Heroes Division",
+	"CreatedByURL": "www.virtualheroes.com",
+	"Description": "VH VR",
+	"Category": "VH",
+	"EnabledByDefault": true,
+	"Installed": true,
+	"CanContainContent": true,
+	"IsHidden": true,
+
+	"Modules": [
+		{
+			"Name": "VH_VR",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"Enabled": true
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "EnhancedInput",
+			"Enabled": true
+		},
+		{
+			"Name": "VH_Developer",
+			"Enabled": true
+		}
+	]
+}

@@ -5,3 +5,5 @@ Game/Plugins/VH_FileIO/Source/ThirdParty/libkml/lib/x64/Release/libkmldom.lib fi
 Game/Plugins/VH_ArtUtilities/Content/UltraDynamicSky/Textures/Sky/Real_Stars.uasset filter=lfs diff=lfs merge=lfs -text
 Game/Content/VTAK/Maps/Tutorial/TutorialGaragesLevel_P_BuiltData.uasset filter=lfs diff=lfs merge=lfs -text
 Game/Content/Brushify/Meshes/Foliage/Trees/Maple/Textures/T_MapleTrunk_N.uasset filter=lfs diff=lfs merge=lfs -text
+Plugins/VH_ArtUtilities/Content/UltraDynamicSky/Textures/Sky/Real_Stars.uasset filter=lfs diff=lfs merge=lfs -text
+Plugins/VH_FileIO/Source/ThirdParty/libkml/lib/x64/Release/libkmldom.lib filter=lfs diff=lfs merge=lfs -text
